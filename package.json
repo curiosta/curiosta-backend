@@ -18,7 +18,7 @@
     "watch": "tsc --watch",
     "test": "jest",
     "seed": "medusa seed -f ./data/seed.json",
-    "start": "npm run build && medusa start",
+    "start": "medusa migrations run && medusa develop -p=8080",
     "dev": "npm run build && medusa develop",
     "build:admin": "medusa-admin build"
   },
