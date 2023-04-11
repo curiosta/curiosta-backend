@@ -62,24 +62,18 @@
         "tsconfig": "tsconfig.spec.json"
       }
     },
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "testPathIgnorePatterns": [
-      "/node_modules/",
-      "<rootDir>/node_modules/"
-    ],
+    "moduleFileExtensions": ["js", "json", "ts"],
+    "testPathIgnorePatterns": ["/node_modules/", "<rootDir>/node_modules/"],
     "rootDir": "src",
     "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|js)$",
     "transform": {
       ".ts": "ts-jest"
     },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
+    "collectCoverageFrom": ["**/*.(t|j)s"],
     "coverageDirectory": "./coverage",
     "testEnvironment": "node"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
