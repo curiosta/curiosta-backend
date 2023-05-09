@@ -46,6 +46,12 @@ const plugins = [
     },
   },
   {
+    resolve: `medusa-plugin-segment`,
+    options: {
+      write_key: process.env.SEGMENT_WRITE_KEY,
+    },
+  },
+  {
     resolve: `medusa-payment-stripe`,
     options: {
       api_key: process.env.STRIPE_API_KEY,
