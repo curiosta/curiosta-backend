@@ -31,6 +31,7 @@ const STORE_CORS = process.env.STORE_CORS || "http://localhost:8000";
 const DATABASE_TYPE = process.env.DATABASE_TYPE || "sqlite";
 const DATABASE_URL =
   process.env.DATABASE_URL || "postgres://localhost/medusa-store";
+
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 
 const plugins = [
@@ -81,8 +82,8 @@ const modules = {
   cacheService: {
     resolve: "@medusajs/cache-redis",
     options: {
-      redisUrl: REDIS_URL,
-    },
+      redisUrl: REDIS_URL
+    }
   },
 };
 
@@ -94,7 +95,7 @@ const projectConfig = {
   database_type: DATABASE_TYPE,
   store_cors: STORE_CORS,
   admin_cors: ADMIN_CORS,
-  redis_url: REDIS_URL,
+  redis_url: REDIS_URL
 };
 
 if (DATABASE_URL && DATABASE_TYPE === "postgres") {
