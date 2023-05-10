@@ -10,14 +10,11 @@ class ProductDescriptionSubscriber {
 
   constructor({ productService, eventBusService }: { productService: ProductService, eventBusService: EventBusService }) {
     this.productService = productService;
-    console.log('Subscribed!');
     eventBusService.subscribe("product.created", this.handleDescription);
   }
   handleDescription = async (data) => {
     let productDescription = "";
-    console.log('HHHHHHHH');
     const product = await this.productService.retrieve(data.id);
-    console.log(JSON.stringify(product, undefined, 2));
     if (product.description == null) {
       try {
         const productName = product.title;
