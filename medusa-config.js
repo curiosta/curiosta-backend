@@ -47,6 +47,12 @@ const plugins = [
     },
   },
   {
+    resolve: `medusa-plugin-segment`,
+    options: {
+      write_key: process.env.SEGMENT_WRITE_KEY,
+    },
+  },
+  {
     resolve: `medusa-payment-stripe`,
     options: {
       api_key: process.env.STRIPE_API_KEY,
@@ -70,8 +76,8 @@ const modules = {
   eventBus: {
     resolve: "@medusajs/event-bus-redis",
     options: {
-      redisUrl: REDIS_URL
-    }
+      redisUrl: REDIS_URL,
+    },
   },
   cacheService: {
     resolve: "@medusajs/cache-redis",
