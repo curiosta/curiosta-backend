@@ -10,7 +10,7 @@ class ProductDescriptionSubscriber {
 
   constructor({ productService, eventBusService }: { productService: ProductService, eventBusService: EventBusService }) {
     this.productService = productService;
-    eventBusService.subscribe("product.created", this.handleDescription);
+    eventBusService.subscribe(ProductService.Events.CREATED, this.handleDescription);
   }
   handleDescription = async (data) => {
     let productDescription = "";
