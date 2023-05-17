@@ -29,7 +29,7 @@ class ProductDescriptionSubscriber {
 
         productDescription = await this.prepareDescription(prompt);
       } catch (error) {
-        const errorMessage = error.response.data.error.message;
+        const errorMessage = error.response?.data.error.message;
         console.error("Error: " + errorMessage);
         return;
       }
@@ -58,10 +58,7 @@ class ProductDescriptionSubscriber {
       frequency_penalty: frequencyPenalty,
       presence_penalty: presencePenalty,
     });
-
-    console.log('\n\n\n\n\n\n\nResponse:', JSON.stringify(response, undefined, 2), '\n\n\n\n\n\n');
-
-    return response.data.choices[0].text.trim();
+    return response?.data?.choices?.[0]?.text?.trim() || null;
   };
 }
 
