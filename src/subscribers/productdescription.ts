@@ -10,15 +10,11 @@ class ProductDescriptionSubscriber {
 
   constructor({ productService, eventBusService }: { productService: ProductService, eventBusService: EventBusService }) {
     this.productService = productService;
-    console.log('<><><><><><><><><><><><><><><>Initializing<><><><><><><><><><><><><><><>');
     eventBusService.subscribe(ProductService.Events.CREATED, this.handleDescription);
   }
   handleDescription = async (data) => {
-    console.log('<><><><><><><><><><><><><><><>Handling<><><><><><><><><><><><><><><>');
     let productDescription = "";
     const product = await this.productService.retrieve(data.id);
-    console.log('<><><><><><><><><><><><><><><>Product<><><><><><><><><><><><><><><>');
-    console.log(JSON.stringify(product, undefined, 4), '<><><><>');
     if (product.description == null) {
       try {
         const productName = product.title;
@@ -26,8 +22,11 @@ class ProductDescriptionSubscriber {
         const prompt = `Write a product description for ${productName}, which has the following features: ${productFeatures.join(
           ", "
         )}.`;
-
-        productDescription = await this.prepareDescription(prompt);
+        try {
+          productDescription = await this.prepareDescription(prompt);
+        } catch (error) {
+          productDescription = error.message
+        }
       } catch (error) {
         const errorMessage = error.response?.data.error.message;
         console.error("Error: " + errorMessage);
@@ -41,24 +40,35 @@ class ProductDescriptionSubscriber {
 
   prepareDescription = async (
     prompt,
+    retries = 0,
     model = "text-davinci-003",
     temperature = 0.7,
     maxTokens = 256,
     topP = 1,
     frequencyPenalty = 0,
-    presencePenalty = 0
+    presencePenalty = 0,
   ) => {
     const openai = new OpenAIApi(configuration);
-    const response = await openai.createCompletion({
-      model,
-      prompt,
-      temperature,
-      max_tokens: maxTokens,
-      top_p: topP,
-      frequency_penalty: frequencyPenalty,
-      presence_penalty: presencePenalty,
-    });
-    return response?.data?.choices?.[0]?.text?.trim() || null;
+    try {
+      const response = await openai.createCompletion({
+        model,
+        prompt,
+        temperature,
+        max_tokens: maxTokens,
+        top_p: topP,
+        frequency_penalty: frequencyPenalty,
+        presence_penalty: presencePenalty,
+      });
+
+      return response.data.choices[0].text.trim();
+
+    } catch (error) {
+      if (!(retries >= 3)) {
+        this.prepareDescription(prompt, retries + 1);
+      } else {
+        throw new Error('No description provided!');
+      }
+    }
   };
 }
 
