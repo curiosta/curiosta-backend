@@ -10,10 +10,12 @@ class ProductDescriptionSubscriber {
 
   constructor({ productService, eventBusService }: { productService: ProductService, eventBusService: EventBusService }) {
     this.productService = productService;
+    console.log('\n\n\n\nProduct Description Subscriber Initialized!!\n\n\n\n\n');
     eventBusService.subscribe(ProductService.Events.CREATED, this.handleDescription);
   }
   handleDescription = async (data) => {
     let productDescription = "";
+    console.log('\n\n\n\nHandling Description!!\n\n\n\n\n', data.id);
     const product = await this.productService.retrieve(data.id);
     if (product.description == null) {
       try {
@@ -45,7 +47,6 @@ class ProductDescriptionSubscriber {
     presencePenalty = 0
   ) => {
     const openai = new OpenAIApi(configuration);
-
     const response = await openai.createCompletion({
       model,
       prompt,
@@ -55,6 +56,8 @@ class ProductDescriptionSubscriber {
       frequency_penalty: frequencyPenalty,
       presence_penalty: presencePenalty,
     });
+
+    console.log('\n\n\n\n\n\n\nResponse:', JSON.stringify(response, undefined, 2), '\n\n\n\n\n\n');
 
     return response.data.choices[0].text.trim();
   };
