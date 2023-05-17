@@ -10,12 +10,13 @@ class ProductDescriptionSubscriber {
 
   constructor({ productService, eventBusService }: { productService: ProductService, eventBusService: EventBusService }) {
     this.productService = productService;
-    console.log('\n\n\n\nProduct Description Subscriber Initialized!!\n\n\n\n\n');
-    eventBusService.subscribe(ProductService.Events.CREATED, this.handleDescription);
+    console.log(ProductService.Events.CREATED);
+    const listener = eventBusService.subscribe(ProductService.Events.CREATED, this.handleDescription);
+    console.log(listener);
   }
   handleDescription = async (data) => {
+    console.log('\n\n\n\nHandling Description!!\n\n\n\n\nID:', data.id, '\n\n\n\n\n\n');
     let productDescription = "";
-    console.log('\n\n\n\nHandling Description!!\n\n\n\n\n', data.id);
     const product = await this.productService.retrieve(data.id);
     if (product.description == null) {
       try {
