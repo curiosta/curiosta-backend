@@ -10,7 +10,7 @@ class ProductDescriptionSubscriber {
 
   constructor({ productService, eventBusService }: { productService: ProductService, eventBusService: EventBusService }) {
     this.productService = productService;
-    eventBusService.subscribe("product.created", this.handleDescription);
+    eventBusService.subscribe(ProductService.Events.CREATED, this.handleDescription);
   }
   handleDescription = async (data) => {
     let productDescription = "";
@@ -22,10 +22,13 @@ class ProductDescriptionSubscriber {
         const prompt = `Write a product description for ${productName}, which has the following features: ${productFeatures.join(
           ", "
         )}.`;
-
-        productDescription = await this.prepareDescription(prompt);
+        try {
+          productDescription = await this.prepareDescription(prompt);
+        } catch (error) {
+          productDescription = error.message
+        }
       } catch (error) {
-        const errorMessage = error.response.data.error.message;
+        const errorMessage = error.response?.data.error.message;
         console.error("Error: " + errorMessage);
         return;
       }
@@ -37,27 +40,36 @@ class ProductDescriptionSubscriber {
 
   prepareDescription = async (
     prompt,
+    retries = 0,
     model = "text-davinci-003",
     temperature = 0.7,
     maxTokens = 256,
     topP = 1,
     frequencyPenalty = 0,
-    presencePenalty = 0
+    presencePenalty = 0,
   ) => {
     const openai = new OpenAIApi(configuration);
+    try {
+      const response = await openai.createCompletion({
+        model,
+        prompt,
+        temperature,
+        max_tokens: maxTokens,
+        top_p: topP,
+        frequency_penalty: frequencyPenalty,
+        presence_penalty: presencePenalty,
+      });
 
-    const response = await openai.createCompletion({
-      model,
-      prompt,
-      temperature,
-      max_tokens: maxTokens,
-      top_p: topP,
-      frequency_penalty: frequencyPenalty,
-      presence_penalty: presencePenalty,
-    });
+      return response.data.choices[0].text.trim();
 
-    return response.data.choices[0].text.trim();
+    } catch (error) {
+      if (!(retries >= 3)) {
+        this.prepareDescription(prompt, retries + 1);
+      } else {
+        throw new Error('No description provided!');
+      }
+    }
   };
 }
 
-export default ProductDescriptionSubscriber;
+export default ProductDescriptionSubscriber
