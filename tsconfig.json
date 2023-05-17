@@ -16,7 +16,7 @@
     "rootDir": "src",
     "baseUrl": "src"
   },
-  "include": ["src", "productdescription.ts"],
+  "include": ["src"],
   "exclude": [
     "**/__tests__",
     "**/__fixtures__",

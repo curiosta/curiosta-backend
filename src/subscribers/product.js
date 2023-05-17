@@ -12,7 +12,6 @@ class ProductSubscriber {
     eventBusService.subscribe(ProductService.Events.DELETED, async (data) => {
       console.log('\n\n\n<><><><><>\nProduct Deleted\n\n\n', data.id)
     });
-
   }
 }
 
