@@ -10,9 +10,12 @@ class ProductDescriptionSubscriber {
 
   constructor({ productService, eventBusService }: { productService: ProductService, eventBusService: EventBusService }) {
     this.productService = productService;
-    console.log(ProductService.Events.CREATED);
-    const listener = eventBusService.subscribe(ProductService.Events.CREATED, this.handleDescription);
-    console.log(listener);
+    eventBusService.subscribe(ProductService.Events.CREATED, this.handleDescription);
+    eventBusService.subscribe(ProductService.Events.CREATED, async () => {
+      console.log('\n\n\n\n\n\n\nSubscriber 2\n\n\n\n\n\n\n');
+    }, {
+      subscriberId: '2'
+    });
   }
   handleDescription = async (data) => {
     console.log('\n\n\n\nHandling Description!!\n\n\n\n\nID:', data.id, '\n\n\n\n\n\n');
