@@ -61,7 +61,14 @@ const plugins = [
       automatic_payment_methods: true,
     },
   },
-
+  {
+    resolve: `medusa-plugin-sendgrid`,
+    options: {
+      api_key: process.env.SENDGRID_API_KEY,
+      from: process.env.SENDGRID_FROM,
+      user_password_reset_template: "d-0ff7f800872c4caeadb250116b0ce3b9",
+    },
+  },
   {
     resolve: "@medusajs/admin",
     /** @type {import('@medusajs/admin').PluginOptions} */
@@ -82,8 +89,8 @@ const modules = {
   cacheService: {
     resolve: "@medusajs/cache-redis",
     options: {
-      redisUrl: REDIS_URL
-    }
+      redisUrl: REDIS_URL,
+    },
   },
 };
 
@@ -95,7 +102,7 @@ const projectConfig = {
   database_type: DATABASE_TYPE,
   store_cors: STORE_CORS,
   admin_cors: ADMIN_CORS,
-  redis_url: REDIS_URL
+  redis_url: REDIS_URL,
 };
 
 if (DATABASE_URL && DATABASE_TYPE === "postgres") {
