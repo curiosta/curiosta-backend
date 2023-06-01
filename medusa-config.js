@@ -47,6 +47,40 @@ const plugins = [
     },
   },
   {
+    resolve: `medusa-plugin-meilisearch`,
+    options: {
+      // config object passed when creating an instance
+      // of the MeiliSearch client
+      config: {
+        host: process.env.MEILISEARCH_HOST,
+        apiKey: process.env.MEILISEARCH_API_KEY,
+      },
+      settings: {
+        products: {
+          indexSettings: {
+            searchableAttributes: ["title", "description", "variant_sku"],
+            displayedAttributes: [
+              "title",
+              "description",
+              "variant_sku",
+              "thumbnail",
+              "handle",
+            ],
+          },
+          primaryKey: "id",
+          transform: (product) => ({
+            id: product.id,
+            price: product.variants[0].prices.reduce((_, price) => {
+              if (price.currency_code === "inr") {
+                return price.amount;
+              }
+            }),
+          }),
+        },
+      },
+    },
+  },
+  {
     resolve: `medusa-plugin-segment`,
     options: {
       write_key: process.env.SEGMENT_WRITE_KEY,

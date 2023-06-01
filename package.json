@@ -40,6 +40,7 @@
     "medusa-interfaces": "^1.3.7",
     "medusa-payment-manual": "^1.0.23",
     "medusa-payment-stripe": "^5.0.0",
+    "medusa-plugin-meilisearch": "^2.0.7",
     "medusa-plugin-segment": "^1.3.5",
     "medusa-plugin-sendgrid": "^1.3.9",
     "openai": "^3.2.1",
