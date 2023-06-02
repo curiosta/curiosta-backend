@@ -35,9 +35,9 @@ const DATABASE_URL =
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 
 const plugins = [
-  `medusa-fulfillment-manual`,
+  "medusa-fulfillment-manual",
   {
-    resolve: `medusa-file-s3`,
+    resolve: "medusa-file-s3",
     options: {
       s3_url: process.env.S3_URL,
       bucket: process.env.S3_BUCKET,
@@ -47,10 +47,8 @@ const plugins = [
     },
   },
   {
-    resolve: `medusa-plugin-meilisearch`,
+    resolve: "medusa-plugin-meilisearch",
     options: {
-      // config object passed when creating an instance
-      // of the MeiliSearch client
       config: {
         host: process.env.MEILISEARCH_HOST,
         apiKey: process.env.MEILISEARCH_API_KEY,
@@ -68,26 +66,29 @@ const plugins = [
             ],
           },
           primaryKey: "id",
-          transform: (product) => ({
-            id: product.id,
-            price: product.variants[0].prices.reduce((_, price) => {
+          transform: (product) => {
+            console.log("price");
+            const price = product.variants[0].prices.reduce((_, price) => {
               if (price.currency_code === "inr") {
                 return price.amount;
               }
-            }),
-          }),
+            });
+            return {
+              // id: product.id,
+            };
+          },
         },
       },
     },
   },
   {
-    resolve: `medusa-plugin-segment`,
+    resolve: "medusa-plugin-segment",
     options: {
       write_key: process.env.SEGMENT_WRITE_KEY,
     },
   },
   {
-    resolve: `medusa-payment-stripe`,
+    resolve: "medusa-payment-stripe",
     options: {
       api_key: process.env.STRIPE_API_KEY,
       webhook_secret: process.env.STRIPE_WEBHOOK_SECRET,
@@ -96,7 +97,7 @@ const plugins = [
     },
   },
   {
-    resolve: `medusa-plugin-sendgrid`,
+    resolve: "medusa-plugin-sendgrid",
     options: {
       api_key: process.env.SENDGRID_API_KEY,
       from: process.env.SENDGRID_FROM,
