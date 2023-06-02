@@ -35,9 +35,9 @@ const DATABASE_URL =
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 
 const plugins = [
-  `medusa-fulfillment-manual`,
+  "medusa-fulfillment-manual",
   {
-    resolve: `medusa-file-s3`,
+    resolve: "medusa-file-s3",
     options: {
       s3_url: process.env.S3_URL,
       bucket: process.env.S3_BUCKET,
@@ -47,13 +47,48 @@ const plugins = [
     },
   },
   {
-    resolve: `medusa-plugin-segment`,
+    resolve: "medusa-plugin-meilisearch",
+    options: {
+      config: {
+        host: process.env.MEILISEARCH_HOST,
+        apiKey: process.env.MEILISEARCH_API_KEY,
+      },
+      settings: {
+        products: {
+          indexSettings: {
+            searchableAttributes: ["title", "description", "variant_sku"],
+            displayedAttributes: [
+              "title",
+              "description",
+              "variant_sku",
+              "thumbnail",
+              "handle",
+            ],
+          },
+          primaryKey: "id",
+          transform: (product) => {
+            console.log("price");
+            const price = product.variants[0].prices.reduce((_, price) => {
+              if (price.currency_code === "inr") {
+                return price.amount;
+              }
+            });
+            return {
+              // id: product.id,
+            };
+          },
+        },
+      },
+    },
+  },
+  {
+    resolve: "medusa-plugin-segment",
     options: {
       write_key: process.env.SEGMENT_WRITE_KEY,
     },
   },
   {
-    resolve: `medusa-payment-stripe`,
+    resolve: "medusa-payment-stripe",
     options: {
       api_key: process.env.STRIPE_API_KEY,
       webhook_secret: process.env.STRIPE_WEBHOOK_SECRET,
@@ -61,7 +96,14 @@ const plugins = [
       automatic_payment_methods: true,
     },
   },
-
+  {
+    resolve: "medusa-plugin-sendgrid",
+    options: {
+      api_key: process.env.SENDGRID_API_KEY,
+      from: process.env.SENDGRID_FROM,
+      user_password_reset_template: "d-0ff7f800872c4caeadb250116b0ce3b9",
+    },
+  },
   {
     resolve: "@medusajs/admin",
     /** @type {import('@medusajs/admin').PluginOptions} */
@@ -82,8 +124,8 @@ const modules = {
   cacheService: {
     resolve: "@medusajs/cache-redis",
     options: {
-      redisUrl: REDIS_URL
-    }
+      redisUrl: REDIS_URL,
+    },
   },
 };
 
@@ -95,7 +137,7 @@ const projectConfig = {
   database_type: DATABASE_TYPE,
   store_cors: STORE_CORS,
   admin_cors: ADMIN_CORS,
-  redis_url: REDIS_URL
+  redis_url: REDIS_URL,
 };
 
 if (DATABASE_URL && DATABASE_TYPE === "postgres") {
