@@ -69,6 +69,7 @@ const plugins = [
           },
           primaryKey: "id",
           transformer: (product) => {
+            const { id, title, description, thumbnail, handle } = product;
             const prices = {};
             const price = product.variants[0].prices.reduce((_, price) => {
               prices[price.currency_code] = price.amount;
@@ -76,7 +77,7 @@ const plugins = [
                 return price.amount;
               }
             });
-            const { id, title, description, thumbnail, handle } = product;
+            const categoriesArr = product.categories.map((categ) => categ.id);
             return {
               id,
               price,
@@ -85,6 +86,7 @@ const plugins = [
               description,
               thumbnail,
               handle,
+              categories: categoriesArr,
             };
           },
         },
