@@ -62,19 +62,29 @@ const plugins = [
               "description",
               "variant_sku",
               "thumbnail",
+              "prices",
               "handle",
+              "id",
             ],
           },
           primaryKey: "id",
-          transform: (product) => {
-            console.log("price");
+          transformer: (product) => {
+            const prices = {};
             const price = product.variants[0].prices.reduce((_, price) => {
+              prices[price.currency_code] = price.amount;
               if (price.currency_code === "inr") {
                 return price.amount;
               }
             });
+            const { id, title, description, thumbnail, handle } = product;
             return {
-              // id: product.id,
+              id,
+              price,
+              prices,
+              title,
+              description,
+              thumbnail,
+              handle,
             };
           },
         },
