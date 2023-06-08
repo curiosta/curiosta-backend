@@ -71,16 +71,21 @@ const plugins = [
           transformer: (product) => {
             const { id, title, description, thumbnail, handle } = product;
             const prices = {};
-            const price = product.variants[0].prices.reduce((_, price) => {
+
+            product.variants[0].prices.forEach((price) => {
               prices[price.currency_code] = price.amount;
-              if (price.currency_code === "inr") {
-                return price.amount;
-              }
             });
+
             const categoriesArr = product.categories.map((categ) => categ.id);
+
+            if (!prices || !id || Object.values(prices).length < 3) {
+              return null;
+            }
+
+            console.log("Updated:", id, prices);
+
             return {
               id,
-              price,
               prices,
               title,
               description,
