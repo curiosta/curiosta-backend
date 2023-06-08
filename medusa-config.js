@@ -69,22 +69,29 @@ const plugins = [
           },
           primaryKey: "id",
           transformer: (product) => {
-            const prices = {};
-            const price = product.variants[0].prices.reduce((_, price) => {
-              prices[price.currency_code] = price.amount;
-              if (price.currency_code === "inr") {
-                return price.amount;
-              }
-            });
             const { id, title, description, thumbnail, handle } = product;
+            const prices = {};
+
+            product.variants[0].prices.forEach((price) => {
+              prices[price.currency_code] = price.amount;
+            });
+
+            const categoriesArr = product?.categories?.map((categ) => categ.id);
+
+            if (!prices || !id || Object.values(prices).length < 3) {
+              return null;
+            }
+
+            console.log("Updated:", id, prices);
+
             return {
               id,
-              price,
               prices,
               title,
               description,
               thumbnail,
               handle,
+              categories: categoriesArr,
             };
           },
         },
