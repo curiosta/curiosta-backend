@@ -76,7 +76,7 @@ const plugins = [
               prices[price.currency_code] = price.amount;
             });
 
-            const categoriesArr = product.categories.map((categ) => categ.id);
+            const categoriesArr = product?.categories?.map((categ) => categ.id);
 
             if (!prices || !id || Object.values(prices).length < 3) {
               return null;
