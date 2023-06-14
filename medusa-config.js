@@ -118,7 +118,9 @@ const plugins = [
     options: {
       api_key: process.env.SENDGRID_API_KEY,
       from: process.env.SENDGRID_FROM,
-      user_password_reset_template: "d-0ff7f800872c4caeadb250116b0ce3b9",
+      user_password_reset_template: "d-685a5cda106d4db9b11e77af3c0e6090",
+      customer_password_reset_template: "d-0ff7f800872c4caeadb250116b0ce3b9 ",
+      order_placed_template: "d-a0093ed5b002403ba5655c2535493490",
     },
   },
   {
