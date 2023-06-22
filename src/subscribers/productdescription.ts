@@ -12,6 +12,27 @@ class ProductDescriptionSubscriber {
     this.productService = productService;
     eventBusService.subscribe(ProductService.Events.CREATED, this.handleDescription);
   }
+
+  handleMetaDescription = async ({ id }: { id: string }) => {
+    let metaDescription = (productName: string, productFeatures: string[]) => `max 160 characters including spaces, write a meta description for ${productName} with following features: ${productFeatures.join(', ')}`;
+    console.log(`'%c ID: ${id}`, 'color: #1c87c9; font-size: 18px');
+    const product = await this.productService.retrieve(id);
+    let prompt;
+    try {
+      prompt = await this.prepareDescription(metaDescription(product.title, [product.subtitle, product.material]));
+    } catch (error) {
+      prompt = `${product.title}: ${[product.subtitle, product.material].join(', ')}`
+    }
+
+    console.log(`\n\n\n\n\n\n\n\n ${prompt} \n\n\n\n\n\n\n\n`);
+    if (typeof product.metadata === 'object') {
+      product.metadata.meta_description = prompt;
+    } else {
+      product.metadata = { meta_description: prompt };
+    }
+    await this.productService.update(product.id, product as any);
+  }
+
   handleDescription = async (data) => {
     let productDescription = "";
     const product = await this.productService.retrieve(data.id);
