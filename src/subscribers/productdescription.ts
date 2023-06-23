@@ -11,7 +11,32 @@ class ProductDescriptionSubscriber {
   constructor({ productService, eventBusService }: { productService: ProductService, eventBusService: EventBusService }) {
     this.productService = productService;
     eventBusService.subscribe(ProductService.Events.CREATED, this.handleDescription);
+    eventBusService.subscribe(ProductService.Events.CREATED, this.handleMetaDescription);
   }
+
+  handleMetaDescription = async ({ id }: { id: string }) => {
+    let metaDescription = (productName: string, productFeatures: string[]) => `max 160 characters including spaces, write a meta description for ${productName} with following features: ${productFeatures.join(', ')}`;
+    const product = await this.productService.retrieve(id);
+
+    let prompt;
+
+    try {
+
+      prompt = await this.prepareDescription(metaDescription(product.title, [product.subtitle, product.material]));
+    } catch (error) {
+      prompt = `${product.title}: ${[product.subtitle, product.material].join(', ')}`
+    }
+
+    if (product.metadata) {
+      product.metadata.meta_description = prompt;
+    } else {
+      product.metadata = { meta_description: prompt };
+    }
+    try {
+      await this.productService.update(product.id, product as any);
+    } catch (error) { }
+  }
+
   handleDescription = async (data) => {
     let productDescription = "";
     const product = await this.productService.retrieve(data.id);
