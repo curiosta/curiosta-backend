@@ -9,10 +9,6 @@
     {
       "email": "admin@medusa-test.com",
       "password": "supersecret"
-    },
-    {
-      "email": "labham@curiosta.com",
-      "password": "labham1234"
     }
   ],
   "regions": [
