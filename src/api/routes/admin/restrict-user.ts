@@ -11,7 +11,7 @@ export const restrictUser = (router: Router) => {
       await customerService.delete(result.id);
       return res.json({ status: 200, message: 'User has been deleted!' })
     } catch (error) {
-      return res.status(500).json({ status: 500, message: 'An error occurred!' })
+      return res.status(500).json({ status: 500, message: 'An error occurred!', error: error instanceof Error ? error.message : error })
     }
 
   })
