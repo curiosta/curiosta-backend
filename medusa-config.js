@@ -40,11 +40,11 @@ const plugins = [
   {
     resolve: "medusa-file-s3",
     options: {
-      s3_url: process.env.S3_URL,
-      bucket: process.env.S3_BUCKET,
-      region: "ap-south-1",
-      access_key_id: process.env.S3_ACCESS_KEY_ID,
-      secret_access_key: process.env.S3_SECRET_ACCESS_KEY,
+      s3_url: process.env.AWS_URL,
+      bucket: process.env.AWS_BUCKET,
+      region: process.env.AWS_REGION,
+      access_key_id: process.env.AWS_ACCESS_KEY_ID,
+      secret_access_key: process.env.AWS_SECRET_ACCESS_KEY,
     },
   },
   {
