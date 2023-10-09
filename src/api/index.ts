@@ -7,7 +7,7 @@ import cors from 'cors'
 import { deleteCustomer } from "./routes/admin/delete-customer";
 import { listDeletedCustomers } from "./routes/admin/list-deleted";
 import { restoreCustomer } from "./routes/admin/restore-customer";
-import { uploadFile } from "./routes/store/uploads";
+import { uploadFile } from "./routes/global/uploads";
 import { S3Client } from "@aws-sdk/client-s3";
 
 export default (rootDirectory: string): Router | Router[] => {

@@ -15,9 +15,13 @@ export const uploadFile = (router: Router, { s3Client }: { s3Client: S3Client })
         return res.status(403).send()
       }
     }
+    const ext = req.query.ext as string
+    if (!ext) return res.status(422).send('Missing file extension!');
+
+
     const id = req.user.customer_id || req.user.userId;
 
-    const key = `${id}/${ulid()}`
+    const key = `${id}_${ulid()}.${ext}`
     const command = new PutObjectCommand({ Bucket: process.env.AWS_BUCKET, Key: key });
 
     const url = await getSignedUrl(s3Client, command, { expiresIn: 300 }); // 5 minutes
