@@ -12,6 +12,19 @@ class ProductDescriptionSubscriber {
     this.productService = productService;
     eventBusService.subscribe(ProductService.Events.CREATED, this.handleDescription);
     eventBusService.subscribe(ProductService.Events.CREATED, this.handleMetaDescription);
+
+
+    // update all existing products
+
+    this.productService.list({}).then((products) => {
+      products.map((p) => {
+
+        // Do Your Task Here.
+
+        // console.log(`Generating meta description of ${p.title}`);
+        this.handleMetaDescription({ id: p.id })
+      });
+    })
   }
 
   handleMetaDescription = async ({ id }: { id: string }) => {
@@ -22,18 +35,21 @@ class ProductDescriptionSubscriber {
 
     try {
 
-      prompt = await this.prepareDescription(metaDescription(product.title, [product.subtitle, product.material]));
+      prompt = await this.prepareDescription(metaDescription(product.title, [product.subtitle, product.material]), { maxTokens: 160 });
+
     } catch (error) {
       prompt = `${product.title}: ${[product.subtitle, product.material].join(', ')}`
     }
+
 
     if (product.metadata) {
       product.metadata.meta_description = prompt;
     } else {
       product.metadata = { meta_description: prompt };
     }
+
     try {
-      await this.productService.update(product.id, product as any);
+      // await this.productService.update(product.id, product as any);
     } catch (error) { }
   }
 
@@ -64,32 +80,21 @@ class ProductDescriptionSubscriber {
   };
 
   prepareDescription = async (
-    prompt,
-    retries = 0,
-    model = "text-davinci-003",
-    temperature = 0.7,
-    maxTokens = 256,
-    topP = 1,
-    frequencyPenalty = 0,
-    presencePenalty = 0,
+    prompt: string,
+    {
+      retries = 0,
+      model = "gpt-3.5-turbo",
+      maxTokens = 256 } = {}
   ) => {
     const openai = new OpenAIApi(configuration);
     try {
-      const response = await openai.createCompletion({
-        model,
-        prompt,
-        temperature,
-        max_tokens: maxTokens,
-        top_p: topP,
-        frequency_penalty: frequencyPenalty,
-        presence_penalty: presencePenalty,
-      });
+      const response = await openai.createChatCompletion({ messages: [{ role: 'system', content: prompt }], model, max_tokens: maxTokens });
 
-      return response.data.choices[0].text.trim();
+      return response.data.choices[0].message.content
 
     } catch (error) {
       if (!(retries >= 3)) {
-        this.prepareDescription(prompt, retries + 1);
+        this.prepareDescription(prompt, { retries: retries + 1 });
       } else {
         throw new Error('No description provided!');
       }
