@@ -18,3 +18,4 @@ medusa-db.sql
 build
 
 *.json
+.cache

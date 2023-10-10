@@ -36,14 +36,15 @@ const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 
 const plugins = [
   "medusa-fulfillment-manual",
+  "medusa-payment-manual",
   {
     resolve: "medusa-file-s3",
     options: {
-      s3_url: process.env.S3_URL,
-      bucket: process.env.S3_BUCKET,
-      region: "ap-south-1",
-      access_key_id: process.env.S3_ACCESS_KEY_ID,
-      secret_access_key: process.env.S3_SECRET_ACCESS_KEY,
+      s3_url: process.env.AWS_URL,
+      bucket: process.env.AWS_BUCKET,
+      region: process.env.AWS_REGION,
+      access_key_id: process.env.AWS_ACCESS_KEY_ID,
+      secret_access_key: process.env.AWS_SECRET_ACCESS_KEY,
     },
   },
   {
@@ -109,8 +110,9 @@ const plugins = [
     options: {
       api_key: process.env.STRIPE_API_KEY,
       webhook_secret: process.env.STRIPE_WEBHOOK_SECRET,
-      capture: true,
+      payment_description: "Order for local manufacturing and fabrication",
       automatic_payment_methods: true,
+      capture: true,
     },
   },
   {
@@ -119,7 +121,7 @@ const plugins = [
       api_key: process.env.SENDGRID_API_KEY,
       from: process.env.SENDGRID_FROM,
       user_password_reset_template: "d-685a5cda106d4db9b11e77af3c0e6090",
-      customer_password_reset_template: "d-0ff7f800872c4caeadb250116b0ce3b9 ",
+      customer_password_reset_template: "d-0ff7f800872c4caeadb250116b0ce3b9",
       order_placed_template: "d-a0093ed5b002403ba5655c2535493490",
     },
   },
@@ -128,7 +130,7 @@ const plugins = [
     /** @type {import('@medusajs/admin').PluginOptions} */
     options: {
       autoRebuild: true,
-      path: "app",
+      path: "/app",
     },
   },
 ];
