@@ -1,9 +1,10 @@
 const dotenv = require("dotenv");
+const { existsSync } = require("fs");
 
 let ENV_FILE_NAME = ".env";
 switch (process.env.NODE_ENV) {
   case "production":
-    ENV_FILE_NAME = ".env.production";
+    ENV_FILE_NAME = existsSync('./.env.production') ? '.env.production' : '.env'
     break;
   case "staging":
     ENV_FILE_NAME = ".env.staging";
@@ -12,6 +13,8 @@ switch (process.env.NODE_ENV) {
     ENV_FILE_NAME = ".env.test";
     break;
   case "development":
+    ENV_FILE_NAME = existsSync('./.env.development') ? '.env.development' : '.env'
+    break;
   default:
     ENV_FILE_NAME = ".env";
     break;
@@ -31,6 +34,7 @@ const STORE_CORS = process.env.STORE_CORS || "http://localhost:8000";
 const DATABASE_TYPE = process.env.DATABASE_TYPE || "sqlite";
 const DATABASE_URL =
   process.env.DATABASE_URL || "postgres://localhost/medusa-store";
+
 
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 
