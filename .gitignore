@@ -19,3 +19,6 @@ build
 
 *.json
 .cache
+
+.env.*
+!.env.template
