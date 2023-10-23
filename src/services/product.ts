@@ -1,11 +1,11 @@
-import { ProductService as BaseProductService, Product, ProductVariantService } from "@medusajs/medusa";
-import { CreateProductInput, UpdateProductInput } from "@medusajs/medusa/dist/types/product";
+import { ProductService as BaseProductService, ProductVariantService } from "@medusajs/medusa";
+import { CreateProductInput } from "@medusajs/medusa/dist/types/product";
 import axios from 'axios';
+
 
 class ProductService extends BaseProductService {
   productVariantService: ProductVariantService;
   base_url?: string | null;
-  token?: string;
   credentials: {
     email?: string | null;
     password?: string | null;
@@ -26,7 +26,6 @@ class ProductService extends BaseProductService {
     if (!this.base_url) {
       throw new Error('Backend service host url is missing!. Please add them or contact administrator!')
     }
-
     if (!this.credentials.email || !this.credentials.password) {
       throw new Error('Backend service credentials are missing!. Please add them or contact administrator!')
     }
@@ -38,7 +37,7 @@ class ProductService extends BaseProductService {
         'password': this.credentials.password
       });
 
-      this.token = result.data?.access_token;
+      console.log(result.data);
 
     } catch (error) {
       console.log(error);
@@ -46,74 +45,16 @@ class ProductService extends BaseProductService {
     }
   }
 
-  private async createProductWithFetch(product: CreateProductInput) {
-    const response = await axios.post<{ product: Product }>(`${this.base_url}/admin/products`, product, {
-      headers: {
-        'Authorization': `Bearer ${this.token}`
-      }
-    });
-    return response.data;
-  }
-
-  private async updateProductWithFetch(id: string, product: UpdateProductInput) {
-    const response = await axios.post<{ product: Product }>(`${this.base_url}/admin/products/${id}`, product, {
-      headers: {
-        'Authorization': `Bearer ${this.token}`
-      }
-    });
-    return response.data;
-  }
-
-  async addBulkProducts(products: ((CreateProductInput | UpdateProductInput) & { id: string; rowNumber: number; })[]) {
+  async addBulkProducts(products: CreateProductInput[]) {
     await this.loginAdmin();
-
-    const promises = products.map((product, i) => {
-      return new Promise<Partial<Product & { rowNumber: number }>>(async (resolve, reject) => {
-        if (product.id) {
-          let productExists;
-          try {
-            await this.retrieve(product.id)
-            productExists = true
-          } catch (error) {
-            productExists = false;
-          }
-
-          if (productExists) {
-            const { id, rowNumber, ...updateProduct } = product as UpdateProductInput & { id: string; rowNumber: number; };
-            const { product: updatedProduct } = await this.updateProductWithFetch(id, updateProduct)
-            resolve({ ...updatedProduct, rowNumber });
-          } else {
-
-            const { id, rowNumber, ...createProduct } = product as CreateProductInput & { id: string; rowNumber: number; }
-
-            const { product: createdProduct } = await this.createProductWithFetch(createProduct);
-
-            resolve({ ...createdProduct, rowNumber })
-          }
-        } else {
-          const { id, rowNumber, ...createProduct } = product as CreateProductInput & { id: string, rowNumber: number; }
-
-          const { product: createdProduct } = await this.createProductWithFetch(createProduct)
-
-          resolve({ ...createdProduct, rowNumber })
-        }
-      })
-    });
-
-    try {
-      const saved: Partial<Product & { rowNumber: number }>[] = []
-      const failed: Error[] = [];
-
-      (await Promise.allSettled(promises)).forEach((promiseProduct) => promiseProduct.status === 'fulfilled' ? saved.push(promiseProduct.value) : failed.push(promiseProduct.reason))
-
-      return {
-        saved,
-        failed
-      }
-
-    } catch (error) {
-      console.log(error);
-    }
+    // const promises = products.map(product => {
+    //   return new Promise((resolve, reject) => {
+    //     axios.post(`${this.base_url}/admin/products`, product, {
+    //       withCredentials: true,
+    //     })
+    //   })
+    // });
+    // console.log(await Promise.all(promises));
   }
 }
 

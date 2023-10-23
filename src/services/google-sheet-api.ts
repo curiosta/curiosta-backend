@@ -1,9 +1,8 @@
 import { TransactionBaseService } from "@medusajs/medusa";
 import { google, sheets_v4 } from "googleapis";
 
-export type ProductData = {
+type ProductData = {
   'Product title': string;
-  'Product ID': string;
   Description: string;
   Location: string;
   Category: string;
@@ -13,7 +12,6 @@ export type ProductData = {
   Image_2: string;
   Image_3: string;
   Thumbnail: string;
-  rowNumber: number;
 }
 
 class GoogleSheetAPIService extends TransactionBaseService {
@@ -46,12 +44,10 @@ class GoogleSheetAPIService extends TransactionBaseService {
     const csvDataArray = [];
 
     // Filter and process the data to create the array of objects
-    const filteredData = response.data.values?.filter(row => row.slice(1).every((cell) => cell !== '' && cell !== null));
+    const filteredData = response.data.values?.filter(row => row.every(cell => cell !== '' && cell !== null));
 
-    filteredData.slice(1).forEach((row, index) => {
-      const itemData = {
-        rowNumber: index + 2 // 1 for index, 2nd for header. so adding 2.
-      }; // Create an object to represent an item
+    filteredData.slice(1).forEach((row) => {
+      const itemData = {}; // Create an object to represent an item
 
       row.forEach((cell, columnIndex) => {
         const header = headers[columnIndex];
@@ -85,21 +81,6 @@ class GoogleSheetAPIService extends TransactionBaseService {
     });
 
     return csvDataArray as ProductData[]
-  }
-
-  async updateProductId(sheetId: string, payload: { id: string; rowNumber: number }[]) {
-
-    const valueUpdates = payload.map(p => ({ range: `A${p.rowNumber}`, values: [[p.id]] }));
-
-    const response = await this.sheets.spreadsheets.values.batchUpdate({
-      spreadsheetId: sheetId,
-      requestBody: {
-        valueInputOption: 'RAW',
-        data: valueUpdates
-      }
-    })
-
-    return response.data.totalUpdatedCells
   }
 }
 
