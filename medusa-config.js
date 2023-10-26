@@ -86,9 +86,6 @@ const plugins = [
             if (!prices || !id || Object.values(prices).length < 3) {
               return null;
             }
-
-            console.log("Updated:", id, prices);
-
             return {
               id,
               prices,
@@ -168,7 +165,7 @@ const projectConfig = {
 if (DATABASE_URL && DATABASE_TYPE === "postgres") {
   projectConfig.database_url = DATABASE_URL;
   delete projectConfig["database_database"];
-}
+} 
 
 /** @type {import('@medusajs/medusa').ConfigModule} */
 module.exports = {

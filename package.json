@@ -20,6 +20,7 @@
     "seed": "medusa seed -f ./data/seed.json",
     "start": "npm run build && medusa migrations run && medusa develop -p=8080",
     "dev": "npm run build && medusa develop",
+    "dev:prod": "cross-env NODE_ENV=production npm run build && medusa start",
     "build:admin": "medusa-admin build",
     "migration:run": "npm run build && npx typeorm migration:run -d datasource.js",
     "migration:generate": "npx typeorm migration:generate -d datasource.js"
