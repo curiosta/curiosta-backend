@@ -25,7 +25,6 @@ export default class CustomerService extends BaseCustomerService {
     const customerResult = await this.activeManager_.query(customerByEmailQuery, [email]) as Customer[]
 
     if (!customerResult.length) {
-      console.log(customerResult);
       throw new Error('Customer not found with this email!')
     }
 
