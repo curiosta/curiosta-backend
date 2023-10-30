@@ -17,6 +17,7 @@ import { SheetsSyncProductsRouter } from "./routes/admin/sheets/sync-products";
 export default (rootDirectory: string): Router | Router[] => {
   const { configModule: { projectConfig } } = getConfigFile<ConfigModule>(rootDirectory, "medusa-config")
 
+
   // aws s3 initialization
   const s3Client = new S3Client({ region: process.env.AWS_REGION })
 

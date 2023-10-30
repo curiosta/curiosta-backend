@@ -93,10 +93,11 @@ class ProductDescriptionSubscriber {
       return response.data.choices[0].message.content
 
     } catch (error) {
+      if (error.response.data.error.code === 'invalid_api_key') return '';
       if (!(retries >= 3)) {
         this.prepareDescription(prompt, { retries: retries + 1 });
       } else {
-        throw new Error('No description provided!');
+        console.warn('No description provided!')
       }
     }
   };

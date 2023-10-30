@@ -16,7 +16,7 @@
     "rootDir": "src",
     "baseUrl": "src"
   },
-  "include": ["src"],
+  "include": ["src", "env.d.ts"],
   "exclude": [
     "**/__tests__",
     "**/__fixtures__",

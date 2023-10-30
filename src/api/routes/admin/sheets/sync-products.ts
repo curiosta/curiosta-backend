@@ -11,10 +11,12 @@ export const SheetsSyncProductsRouter = (router: Router) => {
     const googleSheetService = req.scope.resolve('googleSheetApiService') as GoogleSheetAPIService;
     const productService = req.scope.resolve('productService') as ProductService;
 
-    googleSheetService.sheetId = (req.query.sheetId as string) || '1TaiFMTqYGirhLrjUkEfCGbV3hCrX9po_tduFw_sETUg'
+    if (typeof req.query.sheetId === 'string') {
+      googleSheetService.sheetId = req.query.sheetId
+    }
 
     try {
-      const products = await productService.list({}, { relations: ['categories'] })
+      const products = await productService.list({}, { relations: ['categories', 'variants'] })
 
       googleSheetService.syncProducts(products)
 

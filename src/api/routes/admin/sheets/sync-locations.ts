@@ -11,7 +11,9 @@ export const SheetsSyncLocationsRouter = (router: Router) => {
     const googleSheetService = req.scope.resolve('googleSheetApiService') as GoogleSheetAPIService;
     const categoryService = req.scope.resolve('categoryService') as CategoryService;
 
-    googleSheetService.sheetId = (req.query.sheetId as string) || '1TaiFMTqYGirhLrjUkEfCGbV3hCrX9po_tduFw_sETUg'
+    if (typeof req.query.sheetId === 'string') {
+      googleSheetService.sheetId = req.query.sheetId
+    }
 
     try {
 
