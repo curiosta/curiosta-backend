@@ -44,6 +44,27 @@ export function getLocationPath(locations: Location[]) {
   })
 }
 
+export function getLocationPathWithLastID(locations: Location[]) {
+  return locations.map((l) => {
+    const path: { id: string, name: string }[] = [];
+    function getPath(loc: Location) {
+      path.push({ id: loc.id, name: loc.name })
+
+      if (loc.children) {
+        loc.children.map(getPath)
+      }
+    }
+    getPath(l)
+
+    return path.map((location, i) => {
+      if (i + 1 === path.length) {
+        return { id: location.id, path: path.map(l => l.name).join(' / ') }
+      }
+    }).filter(i => i)
+  })
+}
+
+
 export function getLastLocationPath(locations: Location[]) {
   return locations.map((l) => {
     const path = [];

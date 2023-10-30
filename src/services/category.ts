@@ -1,5 +1,5 @@
 import { ProductCategory, ProductCategoryService } from "@medusajs/medusa";
-import { buildLocationTree, getLastLocationPath } from "../utils/convertIntoNestedLocations";
+import { buildLocationTree, getLastLocationPath, getLocationPath, getLocationPathWithLastID } from "../utils/convertIntoNestedLocations";
 
 class CategoryService extends ProductCategoryService {
   constructor(container) {
@@ -24,7 +24,7 @@ class CategoryService extends ProductCategoryService {
     // Convert the location tree to slash-separated strings
 
     const nestedLocations = buildLocationTree(result);
-    const locationStrings: string[] = getLastLocationPath(nestedLocations)
+    const locationStrings: string[] = getLocationPath(nestedLocations)
     return locationStrings
   }
 
@@ -36,5 +36,24 @@ class CategoryService extends ProductCategoryService {
     const result = await this.activeManager_.query(queryByName, [name]);
     return result[0] as ProductCategory
   }
+
+
+  async getLocationWithParentNames(id: string) {
+    const locations: ProductCategory[] = []
+
+    const getLocation = async (locationId: string) => {
+      const location = await this.retrieve(locationId);
+
+      if (location.parent_category_id) {
+        locations.unshift(location)
+        await getLocation(location.parent_category_id)
+      }
+    }
+
+    await getLocation(id)
+
+    return locations.map(l => l.name).join(' / ')
+  }
+
 }
 export default CategoryService

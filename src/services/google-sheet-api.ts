@@ -1,5 +1,7 @@
 import { Product, ProductStatus, TransactionBaseService } from "@medusajs/medusa";
 import { google, sheets_v4 } from "googleapis";
+import { buildLocationTree, getLocationPathWithLastID } from "utils/convertIntoNestedLocations";
+import CategoryService from "./category";
 
 export type ProductData = {
   'Product title': string;
@@ -20,6 +22,7 @@ class GoogleSheetAPIService extends TransactionBaseService {
   // Initialize Google Sheet API service
   sheets: sheets_v4.Sheets;
   sheetId: string;
+  categoryService: CategoryService;
 
   constructor(container) {
     super(container);
@@ -29,6 +32,7 @@ class GoogleSheetAPIService extends TransactionBaseService {
       scopes: ["https://www.googleapis.com/auth/spreadsheets"], // Define required scopes
     });
     this.sheets = google.sheets({ version: 'v4', auth });
+    this.categoryService = container.categoryService
   }
 
   // Retrieve data from a Google Sheet by its ID, specifying sheet name and cell range
@@ -104,7 +108,8 @@ class GoogleSheetAPIService extends TransactionBaseService {
   }
 
   async syncProducts(products: Product[]) {
-    const sheetProducts = products.map((product) => {
+
+    Promise.all(products.map(async (product) => {
       const location = product.categories?.filter(c => c.handle.startsWith('loc:'))[0];
       const category = product.categories?.filter(c => !c.handle.startsWith('loc:'))[0];
 
@@ -120,7 +125,7 @@ class GoogleSheetAPIService extends TransactionBaseService {
         product.description,
 
         // location
-        !location ? '' : location.name,
+        !location ? '' : await this.categoryService.getLocationWithParentNames(location.id),
 
         // category
         !category ? '' : category.name,
@@ -131,26 +136,25 @@ class GoogleSheetAPIService extends TransactionBaseService {
         // Stocks
         product.variants?.[0].inventory_quantity || ''
       ]
+    })).then(async (sheetProducts) => {
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.sheetId,
+        range: `Sheet1!A2:A`,
+      })
+
+      const cellLength = response.data.values?.length || 0;
+
+      const targetedLength = Math.max(sheetProducts.length, cellLength)
+
+      const values = Array(targetedLength).fill(null).map((_, i) => sheetProducts[i] || ['', '', '', '', '', '', '']);
+
+      return this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.sheetId,
+        range: `Sheet1!A2:G`,
+        valueInputOption: 'RAW',
+        requestBody: { range: `Sheet1!A2:G`, values }
+      })
     });
-
-    const response = await this.sheets.spreadsheets.values.get({
-      spreadsheetId: this.sheetId,
-      range: `Sheet1!A2:A`,
-    })
-
-    const cellLength = response.data.values?.length || 0;
-
-    const targetedLength = Math.max(sheetProducts.length, cellLength)
-
-    const values = Array(targetedLength).fill(null).map((_, i) => sheetProducts[i] || ['', '', '', '', '', '', '']);
-
-    return this.sheets.spreadsheets.values.update({
-      spreadsheetId: this.sheetId,
-      range: `Sheet1!A2:G`,
-      valueInputOption: 'RAW',
-      requestBody: { range: `Sheet1!A2:G`, values }
-    })
-
 
   }
 
