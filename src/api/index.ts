@@ -9,6 +9,10 @@ import { listDeletedCustomers } from "./routes/admin/list-deleted";
 import { restoreCustomer } from "./routes/admin/restore-customer";
 import { uploadFile } from "./routes/global/uploads";
 import { S3Client } from "@aws-sdk/client-s3";
+import { SheetsRouter } from "./routes/admin/sheets";
+import { SheetsSyncCategoriesRouter } from "./routes/admin/sheets/sync-categories";
+import { SheetsSyncLocationsRouter } from "./routes/admin/sheets/sync-locations";
+import { SheetsSyncProductsRouter } from "./routes/admin/sheets/sync-products";
 
 export default (rootDirectory: string): Router | Router[] => {
   const { configModule: { projectConfig } } = getConfigFile<ConfigModule>(rootDirectory, "medusa-config")
@@ -25,7 +29,16 @@ export default (rootDirectory: string): Router | Router[] => {
   router.use(cors(storefrontCorsConfig))
 
   // endpoints
-  const endpointHandlers = [deleteCustomer, listDeletedCustomers, restoreCustomer, uploadFile]
+  const endpointHandlers = [
+    deleteCustomer,
+    listDeletedCustomers,
+    restoreCustomer,
+    uploadFile,
+    SheetsRouter,
+    SheetsSyncCategoriesRouter,
+    SheetsSyncLocationsRouter,
+    SheetsSyncProductsRouter
+  ]
   endpointHandlers.forEach(endpointHandle => endpointHandle(router, { s3Client }))
 
   return router

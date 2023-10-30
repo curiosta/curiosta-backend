@@ -16,4 +16,9 @@ package-lock.json
 yarn.lock
 medusa-db.sql
 build
+
+*.json
 .cache
+
+.env.*
+!.env.template
