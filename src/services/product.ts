@@ -1,5 +1,5 @@
 import { ProductService as BaseProductService, Product, ProductVariantService } from "@medusajs/medusa";
-import { CreateProductInput, UpdateProductInput } from "@medusajs/medusa/dist/types/product";
+import { CreateProductInput, FindProductConfig, UpdateProductInput } from "@medusajs/medusa/dist/types/product";
 import axios from 'axios';
 
 class ProductService extends BaseProductService {

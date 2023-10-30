@@ -1,4 +1,4 @@
-import { TransactionBaseService } from "@medusajs/medusa";
+import { Product, ProductStatus, TransactionBaseService } from "@medusajs/medusa";
 import { google, sheets_v4 } from "googleapis";
 
 export type ProductData = {
@@ -19,6 +19,7 @@ export type ProductData = {
 class GoogleSheetAPIService extends TransactionBaseService {
   // Initialize Google Sheet API service
   sheets: sheets_v4.Sheets;
+  sheetId: string;
 
   constructor(container) {
     super(container);
@@ -32,10 +33,10 @@ class GoogleSheetAPIService extends TransactionBaseService {
 
   // Retrieve data from a Google Sheet by its ID, specifying sheet name and cell range
   // Original function for retrieving data as an object of arrays
-  async getProductDataBySheetId(id: string, sheetName = 'Sheet1', cellSelection = 'A1:Z') {
+  async getProductDataBySheetId(sheetName = 'Sheet1', cellSelection = 'A1:Z') {
     // Fetch data from the specified Google Sheet
     const response = await this.sheets.spreadsheets.values.get({
-      spreadsheetId: id,
+      spreadsheetId: this.sheetId,
       range: `${sheetName}!${cellSelection}`,
     });
 
@@ -69,8 +70,8 @@ class GoogleSheetAPIService extends TransactionBaseService {
             break;
           default:
             try {
-              const columnAsNumber = parseInt(cell);
-              if (!Number.isNaN(columnAsNumber)) {
+              const columnAsNumber = /^-?\d+$/.test(cell) && parseInt(cell);
+              if (columnAsNumber && !Number.isNaN(columnAsNumber)) {
                 itemData[header] = columnAsNumber;
               } else {
                 itemData[header] = cell;
@@ -87,12 +88,12 @@ class GoogleSheetAPIService extends TransactionBaseService {
     return csvDataArray as ProductData[]
   }
 
-  async updateProductId(sheetId: string, payload: { id: string; rowNumber: number }[]) {
+  async updateProductId(payload: { id: string; rowNumber: number }[]) {
 
     const valueUpdates = payload.map(p => ({ range: `A${p.rowNumber}`, values: [[p.id]] }));
 
     const response = await this.sheets.spreadsheets.values.batchUpdate({
-      spreadsheetId: sheetId,
+      spreadsheetId: this.sheetId,
       requestBody: {
         valueInputOption: 'RAW',
         data: valueUpdates
@@ -100,6 +101,93 @@ class GoogleSheetAPIService extends TransactionBaseService {
     })
 
     return response.data.totalUpdatedCells
+  }
+
+  async syncProducts(products: Product[]) {
+    const sheetProducts = products.map((product) => {
+      const location = product.categories?.filter(c => c.handle.startsWith('loc:'))[0];
+      const category = product.categories?.filter(c => !c.handle.startsWith('loc:'))[0];
+
+
+      return [
+        // product id
+        product.id,
+
+        // product title
+        product.title,
+
+        // description
+        product.description,
+
+        // location
+        !location ? '' : location.name,
+
+        // category
+        !category ? '' : category.name,
+
+        // Draft
+        product.status === ProductStatus.DRAFT,
+
+        // Stocks
+        product.variants?.[0].inventory_quantity || ''
+      ]
+    });
+
+    const response = await this.sheets.spreadsheets.values.get({
+      spreadsheetId: this.sheetId,
+      range: `Sheet1!A2:A`,
+    })
+
+    const cellLength = response.data.values?.length || 0;
+
+    const targetedLength = Math.max(sheetProducts.length, cellLength)
+
+    const values = Array(targetedLength).fill(null).map((_, i) => sheetProducts[i] || ['', '', '', '', '', '', '']);
+
+    return this.sheets.spreadsheets.values.update({
+      spreadsheetId: this.sheetId,
+      range: `Sheet1!A2:G`,
+      valueInputOption: 'RAW',
+      requestBody: { range: `Sheet1!A2:G`, values }
+    })
+
+
+  }
+
+  async syncCategories(categories: string[] = []) {
+    const response = await this.sheets.spreadsheets.values.get({
+      spreadsheetId: this.sheetId,
+      range: `Sheet2!A2:A`,
+    })
+
+    const cellLength = response.data.values?.length;
+
+    const targetedLength = Math.max(categories.length, cellLength || 0)
+    const values = Array(targetedLength).fill(null).map((_, i) => categories[i] || '').sort((a, z) => !a.length ? 0 : a > z ? 1 : -1).map(c => [c]);
+    return this.sheets.spreadsheets.values.update({
+      spreadsheetId: this.sheetId,
+      range: `Sheet2!A2:A`,
+      valueInputOption: 'RAW',
+      requestBody: { range: `Sheet2!A2:A`, values }
+    })
+  }
+
+  async syncLocations(locations: string[] = []) {
+    const response = await this.sheets.spreadsheets.values.get({
+      spreadsheetId: this.sheetId,
+      range: `Sheet2!B2:B`,
+    })
+
+    const cellLength = response.data.values?.length || 0;
+
+    const targetedLength = Math.max(locations.length, cellLength)
+    const values = Array(targetedLength).fill(null).map((_, i) => locations[i] || '').sort((a, z) => !a.length ? 0 : a > z ? 1 : -1).map(c => [c]);
+    return this.sheets.spreadsheets.values.update({
+      spreadsheetId: this.sheetId,
+      range: `Sheet2!B2:B`,
+      valueInputOption: 'RAW',
+      requestBody: { range: `Sheet2!B2:B`, values }
+    })
   }
 }
 

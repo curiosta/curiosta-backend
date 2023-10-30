@@ -1,10 +1,9 @@
-import { CustomerService as BaseCustomerService, Customer } from '@medusajs/medusa'
+import { CustomerService as BaseCustomerService, Customer, FindConfig } from '@medusajs/medusa'
 
 export default class CustomerService extends BaseCustomerService {
   constructor(container) {
     super(container)
   }
-
 
   async retrieveDeletedCustomer() {
     const deletedCustomerQuery = `
