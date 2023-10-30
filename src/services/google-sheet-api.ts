@@ -26,6 +26,9 @@ class GoogleSheetAPIService extends TransactionBaseService {
 
   constructor(container) {
     super(container);
+
+    this.sheetId = process.env.GSHEET_ID;
+
     // Initialize Google Authentication and create the Google Sheets service
     const auth = new google.auth.GoogleAuth({
       keyFile: process.env.KEY_FILE_PATH, // Specify the path to your service account key file
@@ -37,7 +40,7 @@ class GoogleSheetAPIService extends TransactionBaseService {
 
   // Retrieve data from a Google Sheet by its ID, specifying sheet name and cell range
   // Original function for retrieving data as an object of arrays
-  async getProductDataBySheetId(sheetName = 'Sheet1', cellSelection = 'A1:Z') {
+  async getProductDataBySheetId(sheetName = process.env.PRODUCT_SHEET_NAME, cellSelection = 'A1:Z') {
     // Fetch data from the specified Google Sheet
     const response = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.sheetId,
@@ -56,7 +59,7 @@ class GoogleSheetAPIService extends TransactionBaseService {
     filteredData.slice(1).forEach((row, index) => {
       const itemData = {
         rowNumber: index + 2 // 1 for index, 2nd for header. so adding 2.
-      }; // Create an object to represent an item
+      };
 
       row.forEach((cell, columnIndex) => {
         const header = headers[columnIndex];
@@ -65,6 +68,7 @@ class GoogleSheetAPIService extends TransactionBaseService {
         if (!header) throw new Error('Header not found but data is present. Failed to map data!');
 
         // Process cell values and add them to the itemData object
+
         switch (cell) {
           case 'TRUE':
             itemData[header] = true;
@@ -94,7 +98,7 @@ class GoogleSheetAPIService extends TransactionBaseService {
 
   async updateProductId(payload: { id: string; rowNumber: number }[]) {
 
-    const valueUpdates = payload.map(p => ({ range: `A${p.rowNumber}`, values: [[p.id]] }));
+    const valueUpdates = payload.map(p => ({ range: `${process.env.PRODUCT_SHEET_NAME}!A${p.rowNumber}`, values: [[p.id]] }));
 
     const response = await this.sheets.spreadsheets.values.batchUpdate({
       spreadsheetId: this.sheetId,
@@ -112,7 +116,6 @@ class GoogleSheetAPIService extends TransactionBaseService {
     Promise.all(products.map(async (product) => {
       const location = product.categories?.filter(c => c.handle.startsWith('loc:'))[0];
       const category = product.categories?.filter(c => !c.handle.startsWith('loc:'))[0];
-
 
       return [
         // product id
@@ -134,12 +137,13 @@ class GoogleSheetAPIService extends TransactionBaseService {
         product.status === ProductStatus.DRAFT,
 
         // Stocks
+
         product.variants?.[0].inventory_quantity || ''
       ]
     })).then(async (sheetProducts) => {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.sheetId,
-        range: `Sheet1!A2:A`,
+        range: `${process.env.PRODUCT_SHEET_NAME}!A2:A`,
       })
 
       const cellLength = response.data.values?.length || 0;
@@ -150,9 +154,9 @@ class GoogleSheetAPIService extends TransactionBaseService {
 
       return this.sheets.spreadsheets.values.update({
         spreadsheetId: this.sheetId,
-        range: `Sheet1!A2:G`,
+        range: `${process.env.PRODUCT_SHEET_NAME}!A2:G`,
         valueInputOption: 'RAW',
-        requestBody: { range: `Sheet1!A2:G`, values }
+        requestBody: { range: `${process.env.PRODUCT_SHEET_NAME}!A2:G`, values }
       })
     });
 
@@ -161,7 +165,7 @@ class GoogleSheetAPIService extends TransactionBaseService {
   async syncCategories(categories: string[] = []) {
     const response = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.sheetId,
-      range: `Sheet2!A2:A`,
+      range: `${process.env.DROPDOWN_LIST_SHEET_NAME}!A2:A`,
     })
 
     const cellLength = response.data.values?.length;
@@ -170,16 +174,16 @@ class GoogleSheetAPIService extends TransactionBaseService {
     const values = Array(targetedLength).fill(null).map((_, i) => categories[i] || '').sort((a, z) => !a.length ? 0 : a > z ? 1 : -1).map(c => [c]);
     return this.sheets.spreadsheets.values.update({
       spreadsheetId: this.sheetId,
-      range: `Sheet2!A2:A`,
+      range: `${process.env.DROPDOWN_LIST_SHEET_NAME}!A2:A`,
       valueInputOption: 'RAW',
-      requestBody: { range: `Sheet2!A2:A`, values }
+      requestBody: { range: `${process.env.DROPDOWN_LIST_SHEET_NAME}!A2:A`, values }
     })
   }
 
   async syncLocations(locations: string[] = []) {
     const response = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.sheetId,
-      range: `Sheet2!B2:B`,
+      range: `${process.env.DROPDOWN_LIST_SHEET_NAME}!B2:B`,
     })
 
     const cellLength = response.data.values?.length || 0;
@@ -188,9 +192,9 @@ class GoogleSheetAPIService extends TransactionBaseService {
     const values = Array(targetedLength).fill(null).map((_, i) => locations[i] || '').sort((a, z) => !a.length ? 0 : a > z ? 1 : -1).map(c => [c]);
     return this.sheets.spreadsheets.values.update({
       spreadsheetId: this.sheetId,
-      range: `Sheet2!B2:B`,
+      range: `${process.env.DROPDOWN_LIST_SHEET_NAME}!B2:B`,
       valueInputOption: 'RAW',
-      requestBody: { range: `Sheet2!B2:B`, values }
+      requestBody: { range: `${process.env.DROPDOWN_LIST_SHEET_NAME}!B2:B`, values }
     })
   }
 }

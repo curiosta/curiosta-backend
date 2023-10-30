@@ -17,8 +17,9 @@ export const SheetsRouter = (router: Router) => {
     const categoryService = req.scope.resolve('categoryService') as CategoryService;
     const productService = req.scope.resolve('productService') as ProductService
 
-    googleSheetService.sheetId = (req.query.sheetId as string) || '1TaiFMTqYGirhLrjUkEfCGbV3hCrX9po_tduFw_sETUg';
-
+    if (typeof req.query.sheetId === 'string') {
+      googleSheetService.sheetId = req.query.sheetId
+    }
     try {
       const sheetData = await googleSheetService.getProductDataBySheetId();
 
