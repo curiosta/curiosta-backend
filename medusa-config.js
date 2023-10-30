@@ -77,7 +77,7 @@ const plugins = [
             const { id, title, description, thumbnail, handle } = product;
             const prices = {};
 
-            product.variants[0].prices.forEach((price) => {
+            product.variants?.[0]?.prices.forEach((price) => {
               prices[price.currency_code] = price.amount;
             });
 

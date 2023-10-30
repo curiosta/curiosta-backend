@@ -1,5 +1,5 @@
 import { ProductCategory, ProductCategoryService } from "@medusajs/medusa";
-import { buildLocationTree, getLastLocationPath, getLocationPath, getLocationPathWithLastID } from "../utils/convertIntoNestedLocations";
+
 
 class CategoryService extends ProductCategoryService {
   constructor(container) {
@@ -15,17 +15,30 @@ class CategoryService extends ProductCategoryService {
   }
 
   async retrieveAllLastLocationsName() {
-    const retrieveAllLocations = `
-      SELECT name, id, parent_category_id FROM "product_category" WHERE handle LIKE 'loc:%'
-    `
+    const categories = await this.listAndCount({})
+    const res = await Promise.all(categories[0].map((c) => {
+      return this.productCategoryRepo_.findDescendantsTree(c)
+    }))
 
-    const result = await this.activeManager_.query(retrieveAllLocations) as { name: string, id: string, parent_category_id: string }[]
+    const childCategories = res.filter(r => !r.category_children?.length && r.handle.startsWith('loc:'));
 
-    // Convert the location tree to slash-separated strings
+    const categoriesWithParent = await Promise.all(childCategories.map((c) => this.productCategoryRepo_.findAncestorsTree(c)))
 
-    const nestedLocations = buildLocationTree(result);
-    const locationStrings: string[] = getLocationPath(nestedLocations)
-    return locationStrings
+
+    return categoriesWithParent.map((category) => {
+      const list = [];
+
+      const getParent = (pcat: ProductCategory) => {
+        if (pcat.parent_category) {
+          list.unshift(pcat.name)
+          getParent(pcat.parent_category)
+        }
+      }
+
+      getParent(category);
+
+      return list.join(' / ');
+    })
   }
 
 
@@ -43,7 +56,6 @@ class CategoryService extends ProductCategoryService {
 
     const getLocation = async (locationId: string) => {
       const location = await this.retrieve(locationId);
-
       if (location.parent_category_id) {
         locations.unshift(location)
         await getLocation(location.parent_category_id)
