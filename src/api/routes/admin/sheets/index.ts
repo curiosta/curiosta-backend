@@ -1,4 +1,4 @@
-import { ProductStatus, authenticate } from "@medusajs/medusa"
+import { ProductOption, ProductStatus, authenticate } from "@medusajs/medusa"
 import express, { Router } from "express";
 import CategoryService from "../../../../services/category";
 import GoogleSheetAPIService, { ProductData } from "../../../../services/google-sheet-api";
@@ -7,7 +7,7 @@ import { mapSheetProduct } from "./helpers/mapSheetProduct";
 
 type CategoriesID = { id: string }[];
 
-type SheetProductWithCategories = ProductData & { categories: CategoriesID };
+type SheetProductWithExtras = ProductData & { categories: CategoriesID, options?: ProductOption[] };
 
 export const SheetsRouter = (router: Router) => {
   router.use('/admin/sheets', express.json(), authenticate());
@@ -24,9 +24,14 @@ export const SheetsRouter = (router: Router) => {
       const sheetData = await googleSheetService.getProductDataBySheetId();
 
       const promises = sheetData.map(async (entry) => {
-        const location = await categoryService.getCategoryByName(entry.Location);
+        const location = await categoryService.getCategoryByName(entry.Location.split('/').pop().trim());
         const category = await categoryService.getCategoryByName(entry.Category);
-
+        let options;
+        try {
+          const product = await productService.retrieve(entry["Product ID"], { relations: ['options'] })
+          options = product.options;
+        } catch (error) {
+        }
         const categories: { id: string }[] = []
 
         if (location) {
@@ -36,12 +41,12 @@ export const SheetsRouter = (router: Router) => {
           categories.push({ id: category.id })
         }
 
-        return { ...entry, categories }
+        return { ...entry, categories, options }
       });
 
       let results = (await Promise.allSettled(promises)).filter(r => r.status === 'fulfilled').map((r: any) => r.value)
 
-      results = results.map((product: SheetProductWithCategories) => {
+      results = results.map((product: SheetProductWithExtras) => {
         return mapSheetProduct({
           id: product['Product ID'],
           title: product['Product title'],
@@ -49,9 +54,13 @@ export const SheetsRouter = (router: Router) => {
           stock: product.Stocks,
           categories: product.categories,
           rowNumber: product.rowNumber,
-          status: product.Draft ? ProductStatus.DRAFT : ProductStatus.PUBLISHED
+          status: product.Draft ? ProductStatus.DRAFT : ProductStatus.PUBLISHED,
+          options: product.options
         })
       });
+
+
+
 
       const bulkAddResult = await productService.addBulkProducts(results)
       const savedProductIdAndRowNumber = bulkAddResult.saved.map((p) => ({ id: p.id, rowNumber: p.rowNumber }))

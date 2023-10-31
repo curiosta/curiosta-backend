@@ -22,3 +22,5 @@ build
 
 .env.*
 !.env.template
+
+dump.rdb
