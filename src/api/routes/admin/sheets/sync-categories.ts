@@ -11,8 +11,6 @@ export const SheetsSyncCategoriesRouter = (router: Router) => {
     const googleSheetService = req.scope.resolve('googleSheetApiService') as GoogleSheetAPIService;
     const categoryService = req.scope.resolve('categoryService') as CategoryService;
 
-    console.log('\n\n\n\n', process.env, '\n\n\n\n');
-
     if (typeof req.query.sheetId === 'string') {
       googleSheetService.sheetId = req.query.sheetId
     }

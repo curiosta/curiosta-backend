@@ -66,7 +66,6 @@ class ProductService extends BaseProductService {
 
   async addBulkProducts(products: ((CreateProductInput | UpdateProductInput) & { id: string; rowNumber: number; })[]) {
     await this.loginAdmin();
-
     const promises = products.map((product, i) => {
       return new Promise<Partial<Product & { rowNumber: number }>>(async (resolve, reject) => {
         if (product.id) {
@@ -77,18 +76,21 @@ class ProductService extends BaseProductService {
           } catch (error) {
             productExists = false;
           }
+          try {
+            if (productExists) {
+              const { id, rowNumber, ...updateProduct } = product as UpdateProductInput & { id: string; rowNumber: number; };
+              const { product: updatedProduct } = await this.updateProductWithFetch(id, updateProduct)
+              resolve({ ...updatedProduct, rowNumber });
+            } else {
 
-          if (productExists) {
-            const { id, rowNumber, ...updateProduct } = product as UpdateProductInput & { id: string; rowNumber: number; };
-            const { product: updatedProduct } = await this.updateProductWithFetch(id, updateProduct)
-            resolve({ ...updatedProduct, rowNumber });
-          } else {
+              const { id, rowNumber, ...createProduct } = product as CreateProductInput & { id: string; rowNumber: number; }
 
-            const { id, rowNumber, ...createProduct } = product as CreateProductInput & { id: string; rowNumber: number; }
+              const { product: createdProduct } = await this.createProductWithFetch(createProduct);
 
-            const { product: createdProduct } = await this.createProductWithFetch(createProduct);
-
-            resolve({ ...createdProduct, rowNumber })
+              resolve({ ...createdProduct, rowNumber })
+            }
+          } catch (error) {
+            console.log('An error occurred!', error.response.data);
           }
         } else {
           const { id, rowNumber, ...createProduct } = product as CreateProductInput & { id: string, rowNumber: number; }
@@ -112,7 +114,6 @@ class ProductService extends BaseProductService {
       }
 
     } catch (error) {
-      console.log(error);
     }
   }
 }

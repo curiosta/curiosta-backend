@@ -1,5 +1,5 @@
 import { Product, ProductStatus } from "@medusajs/medusa";
-import { CreateProductInput } from "@medusajs/medusa/dist/types/product";
+import { CreateProductInput, UpdateProductInput } from "@medusajs/medusa/dist/types/product";
 import { ulid } from "ulid";
 
 
@@ -13,7 +13,12 @@ export type CreateProduct = Omit<Partial<Product>, 'variants' | 'categories'> & 
 
 export type CreateProductResponse = CreateProductInput & { id: string, rowNumber: number }
 
-export const mapSheetProduct = (product: CreateProduct): CreateProductResponse => {
+export type UpdateProductResponse = UpdateProductInput & { id: string, rowNumber: number }
+
+
+export const mapSheetProduct = (product: CreateProduct): CreateProductResponse | UpdateProductResponse => {
+
+  const options = product.options?.length ? [{ id: product.options[0].id, value: 'one size' }] : undefined
   return ({
     id: product.id,
     rowNumber: product.rowNumber,
@@ -25,6 +30,7 @@ export const mapSheetProduct = (product: CreateProduct): CreateProductResponse =
     variants: [
       {
         title: 'one size',
+        options,
         inventory_quantity: product.stock || 0,
         prices: [
           {

@@ -6,6 +6,7 @@ class CategoryService extends ProductCategoryService {
     super(container)
   }
   async retrieveAllCategoriesName() {
+
     const retrieveAllCategories = `
       SELECT name FROM product_category WHERE handle NOT LIKE 'loc:%'
     `
