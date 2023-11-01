@@ -66,10 +66,12 @@ class ProductService extends BaseProductService {
 
   async addBulkProducts(products: ((CreateProductInput | UpdateProductInput) & { id: string; rowNumber: number; })[]) {
     await this.loginAdmin();
+
     const promises = products.map((product, i) => {
       return new Promise<Partial<Product & { rowNumber: number }>>(async (resolve, reject) => {
         if (product.id) {
           let productExists;
+          let isUpdating;
           try {
             await this.retrieve(product.id)
             productExists = true
@@ -78,19 +80,19 @@ class ProductService extends BaseProductService {
           }
           try {
             if (productExists) {
+              isUpdating = true
               const { id, rowNumber, ...updateProduct } = product as UpdateProductInput & { id: string; rowNumber: number; };
+
               const { product: updatedProduct } = await this.updateProductWithFetch(id, updateProduct)
               resolve({ ...updatedProduct, rowNumber });
             } else {
-
+              isUpdating = false
               const { id, rowNumber, ...createProduct } = product as CreateProductInput & { id: string; rowNumber: number; }
-
               const { product: createdProduct } = await this.createProductWithFetch(createProduct);
-
               resolve({ ...createdProduct, rowNumber })
             }
           } catch (error) {
-            console.log('An error occurred!', error.response.data);
+            console.log('\n\n\nAn error occurred!\n', error.response.data, '\n', JSON.stringify(product), '\n', isUpdating);
           }
         } else {
           const { id, rowNumber, ...createProduct } = product as CreateProductInput & { id: string, rowNumber: number; }

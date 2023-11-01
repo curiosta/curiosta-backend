@@ -26,7 +26,7 @@ export const SheetsRouter = (router: Router) => {
       const promises = sheetData.map(async (entry) => {
         const location = await categoryService.getCategoryByName(entry.Location.split('/').pop().trim());
         const category = await categoryService.getCategoryByName(entry.Category);
-        let options;
+        let options: ProductOption[];
         try {
           const product = await productService.retrieve(entry["Product ID"], { relations: ['options'] })
           options = product.options;
