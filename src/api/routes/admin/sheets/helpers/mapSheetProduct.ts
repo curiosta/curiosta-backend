@@ -18,7 +18,7 @@ export type UpdateProductResponse = UpdateProductInput & { id: string, rowNumber
 
 export const mapSheetProduct = (product: CreateProduct): CreateProductResponse | UpdateProductResponse => {
 
-  const options = product.options?.length ? [{ id: product.options[0].id, value: 'one size' }] : undefined
+  const options = product.options?.length ? [{ option_id: product.options[0].id, value: 'one size' }] : undefined
   return ({
     id: product.id,
     rowNumber: product.rowNumber,

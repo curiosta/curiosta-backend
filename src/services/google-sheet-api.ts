@@ -54,12 +54,14 @@ class GoogleSheetAPIService extends TransactionBaseService {
     const csvDataArray = [];
 
     // Filter and process the data to create the array of objects
-    const filteredData = response.data.values?.filter(row => row.slice(1).every((cell) => cell !== '' && cell !== null));
-
-    filteredData.slice(1).forEach((row, index) => {
+    response.data.values?.slice(1).forEach((row, index) => {
       const itemData = {
         rowNumber: index + 2 // 1 for index, 2nd for header. so adding 2.
       };
+
+      if (!row[1] || !row[2]) {
+        return;
+      }
 
       row.forEach((cell, columnIndex) => {
         const header = headers[columnIndex];
