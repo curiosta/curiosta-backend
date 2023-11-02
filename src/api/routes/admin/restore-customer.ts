@@ -1,6 +1,6 @@
 import { authenticate } from "@medusajs/medusa"
 import express, { Router } from "express";
-import CustomerService from "../../services/customer";
+import CustomerService from "../../../services/customer";
 
 export const restoreCustomer = (router: Router) => {
   router.use('/admin/customers/restore', express.json(), authenticate());

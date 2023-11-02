@@ -1,7 +1,7 @@
 import { authenticate } from "@medusajs/medusa";
 import express, { Router } from "express";
-import CategoryService from "../../../services/category";
-import GoogleSheetAPIService from "../../../services/google-sheet-api";
+import CategoryService from "../../../../services/category";
+import GoogleSheetAPIService from "../../../../services/google-sheet-api";
 
 
 export const SheetsSyncLocationsRouter = (router: Router) => {
