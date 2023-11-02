@@ -1,11 +1,15 @@
 import { ProductService as BaseProductService, Product, ProductVariantService } from "@medusajs/medusa";
-import { CreateProductInput, FindProductConfig, UpdateProductInput } from "@medusajs/medusa/dist/types/product";
-import axios from 'axios';
+import { CreateProductInput, UpdateProductInput } from "@medusajs/medusa/dist/types/product";
+import axios, { Axios } from 'axios';
+import { wrapper } from 'axios-cookiejar-support';
+import { CookieJar } from 'tough-cookie';
 
 class ProductService extends BaseProductService {
   productVariantService: ProductVariantService;
   base_url?: string | null;
   token?: string;
+  selfServiceClient: Axios
+
   credentials: {
     email?: string | null;
     password?: string | null;
@@ -14,31 +18,36 @@ class ProductService extends BaseProductService {
   constructor(container) {
     super(container);
     this.productVariantService = container.productVariantService as ProductVariantService
-    this.base_url = process.env.BASE_URL;
+    this.base_url = process.env.BASE_URL
     this.credentials = {
       email: process.env.MEDUSA_BACKEND_SERVICE_EMAIL,
       password: process.env.MEDUSA_BACKEND_SERVICE_PASSWORD
-    }
-  }
-
-  private async loginAdmin() {
-
-    if (!this.base_url) {
-      throw new Error('Backend service host url is missing!. Please add them or contact administrator!')
     }
 
     if (!this.credentials.email || !this.credentials.password) {
       throw new Error('Backend service credentials are missing!. Please add them or contact administrator!')
     }
 
+    if (!this.base_url) {
+      throw new Error('Backend service host url is missing!. Please add them or contact administrator!')
+    }
+
+    this.selfServiceClient = wrapper(axios.create({
+      baseURL: this.base_url,
+      jar: new CookieJar()
+    }))
+  }
+
+  private async loginAdmin() {
+
+
+
     try {
       // login system user to admin
-      const result = await axios.post(`${process.env.BASE_URL}/admin/auth/token`, {
+      await this.selfServiceClient.post(`${process.env.BASE_URL}/admin/auth`, {
         'email': this.credentials.email,
         'password': this.credentials.password
       });
-
-      this.token = result.data?.access_token;
 
     } catch (error) {
       console.log(error);
@@ -47,7 +56,7 @@ class ProductService extends BaseProductService {
   }
 
   private async createProductWithFetch(product: CreateProductInput) {
-    const response = await axios.post<{ product: Product }>(`${this.base_url}/admin/products`, product, {
+    const response = await this.selfServiceClient.post<{ product: Product }>(`${this.base_url}/admin/products`, product, {
       headers: {
         'Authorization': `Bearer ${this.token}`
       }
@@ -56,11 +65,7 @@ class ProductService extends BaseProductService {
   }
 
   private async updateProductWithFetch(id: string, product: UpdateProductInput) {
-    const response = await axios.post<{ product: Product }>(`${this.base_url}/admin/products/${id}`, product, {
-      headers: {
-        'Authorization': `Bearer ${this.token}`
-      }
-    });
+    const response = await this.selfServiceClient.post<{ product: Product }>(`${this.base_url}/admin/products/${id}`, product);
     return response.data;
   }
 

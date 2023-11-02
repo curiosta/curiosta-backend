@@ -59,7 +59,8 @@ class GoogleSheetAPIService extends TransactionBaseService {
         rowNumber: index + 2 // 1 for index, 2nd for header. so adding 2.
       };
 
-      if (!row[1] || !row[2]) {
+      // if no title is available only then skip that row
+      if (!row[1]) {
         return;
       }
 
@@ -114,7 +115,6 @@ class GoogleSheetAPIService extends TransactionBaseService {
   }
 
   async syncProducts(products: Product[]) {
-
     Promise.all(products.map(async (product) => {
       const location = product.categories?.filter(c => c.handle.startsWith('loc:'))[0];
       const category = product.categories?.filter(c => !c.handle.startsWith('loc:'))[0];
@@ -140,7 +140,7 @@ class GoogleSheetAPIService extends TransactionBaseService {
 
         // Stocks
 
-        product.variants?.[0].inventory_quantity || ''
+        product.variants?.[0]?.inventory_quantity || ''
       ]
     })).then(async (sheetProducts) => {
       const response = await this.sheets.spreadsheets.values.get({

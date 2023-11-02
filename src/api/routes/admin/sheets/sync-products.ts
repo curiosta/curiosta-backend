@@ -16,6 +16,7 @@ export const SheetsSyncProductsRouter = (router: Router) => {
     }
 
     try {
+
       const products = await productService.list({}, { relations: ['categories', 'variants'] })
 
       googleSheetService.syncProducts(products)
