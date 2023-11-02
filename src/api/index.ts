@@ -4,15 +4,15 @@ import {
 } from "medusa-core-utils";
 import { ConfigModule } from "@medusajs/medusa";
 import cors from 'cors'
-import { deleteCustomer } from "./routes/admin/delete-customer";
-import { listDeletedCustomers } from "./routes/admin/list-deleted";
-import { restoreCustomer } from "./routes/admin/restore-customer";
+import { deleteCustomer } from "./routes/delete-customer";
+import { listDeletedCustomers } from "./routes/list-deleted";
+import { restoreCustomer } from "./routes/restore-customer";
 import { uploadFile } from "./routes/global/uploads";
 import { S3Client } from "@aws-sdk/client-s3";
-import { SheetsRouter } from "./routes/admin/sheets";
-import { SheetsSyncCategoriesRouter } from "./routes/admin/sheets/sync-categories";
-import { SheetsSyncLocationsRouter } from "./routes/admin/sheets/sync-locations";
-import { SheetsSyncProductsRouter } from "./routes/admin/sheets/sync-products";
+import { SheetsRouter } from "./routes/sheets";
+import { SheetsSyncCategoriesRouter } from "./routes/sheets/sync-categories";
+import { SheetsSyncLocationsRouter } from "./routes/sheets/sync-locations";
+import { SheetsSyncProductsRouter } from "./routes/sheets/sync-products";
 
 export default (rootDirectory: string): Router | Router[] => {
   const { configModule: { projectConfig } } = getConfigFile<ConfigModule>(rootDirectory, "medusa-config")

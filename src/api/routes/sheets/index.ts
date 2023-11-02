@@ -1,8 +1,8 @@
 import { ProductOption, ProductStatus, authenticate } from "@medusajs/medusa"
 import express, { Router } from "express";
-import CategoryService from "../../../../services/category";
-import GoogleSheetAPIService, { ProductData } from "../../../../services/google-sheet-api";
-import ProductService from "../../../../services/product";
+import CategoryService from "../../../services/category";
+import GoogleSheetAPIService, { ProductData } from "../../../services/google-sheet-api";
+import ProductService from "../../../services/product";
 import { mapSheetProduct } from "./helpers/mapSheetProduct";
 
 type CategoriesID = { id: string }[];

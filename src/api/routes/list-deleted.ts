@@ -1,6 +1,6 @@
 import { authenticate } from "@medusajs/medusa"
 import { Router } from "express";
-import CustomerService from "../../../services/customer";
+import CustomerService from "../../services/customer";
 
 export const listDeletedCustomers = (router: Router) => {
   router.use('/admin/customers/list-deleted', authenticate());
